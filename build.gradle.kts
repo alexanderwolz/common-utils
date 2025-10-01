@@ -25,7 +25,12 @@ kotlin {
 }
 
 dependencies {
+    implementation("de.alexanderwolz:commons-log:1.0.0")
+    compileOnly("org.bouncycastle:bcpkix-jdk18on:1.81")
+
     testImplementation(kotlin("test"))
+    testImplementation("org.slf4j:slf4j-simple:2.0.17")
+    testImplementation("org.bouncycastle:bcpkix-jdk18on:1.81")
 }
 
 tasks.test {
