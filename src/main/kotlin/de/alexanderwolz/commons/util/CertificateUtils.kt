@@ -253,7 +253,7 @@ object CertificateUtils {
         return Pair(privateKey, certificate)
     }
 
-    private fun writeNewCertPair(keyFile: File, certFile: File, subject: String, serial: BigInteger = BigInteger.ZERO) {
+    fun writeNewCertPair(keyFile: File, certFile: File, subject: String, serial: BigInteger = BigInteger.ZERO) {
         val pair = generateNewCertificatePair(subject, serial)
         keyFile.apply {
             writeText(addPrivateKeyHeaders(pair.first))
