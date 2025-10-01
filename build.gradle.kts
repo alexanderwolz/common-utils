@@ -1,6 +1,9 @@
 plugins {
     kotlin("jvm") version "2.2.10"
     id("java-library")
+    id("io.github.gradle-nexus.publish-plugin") version "1.3.0"
+    id("maven-publish")
+    signing
 }
 
 group = "de.alexanderwolz"
@@ -41,3 +44,51 @@ tasks.jar {
         )
     }
 }
+
+//see also https://github.com/gradle-nexus/publish-plugin/tree/v2.0.0
+publishing {
+    publications {
+        create<MavenPublication>("mavenJava") {
+            from(components["java"])
+            artifactId = "common-utils"
+            pom {
+                name.set("HTTP Client")
+                description.set("Common utils for Java/Kotlin development")
+                url.set("https://github.com/alexanderwolz/common-utils")
+                licenses {
+                    license {
+                        name.set("AGPL-3.0")
+                        url.set("https://www.gnu.org/licenses/agpl-3.0.html")
+                    }
+                }
+                developers {
+                    developer {
+                        id.set("alexanderwolz")
+                        name.set("Alexander Wolz")
+                        url.set("https://www.alexanderwolz.de")
+                    }
+                }
+                scm {
+                    connection.set("scm:git:https://github.com/alexanderwolz/common-utils.git")
+                    developerConnection.set("scm:git:ssh://git@github.com/alexanderwolz/common-utils.git")
+                    url.set("https://github.com/alexanderwolz/common-utils")
+                }
+            }
+        }
+    }
+}
+
+signing {
+    useGpgCmd()
+    sign(publishing.publications["mavenJava"])
+}
+
+nexusPublishing {
+    repositories {
+        sonatype {
+            nexusUrl.set(uri("https://ossrh-staging-api.central.sonatype.com/service/local/"))
+            snapshotRepositoryUrl.set(uri("https://central.sonatype.com/repository/maven-snapshots/"))
+        }
+    }
+}
+
