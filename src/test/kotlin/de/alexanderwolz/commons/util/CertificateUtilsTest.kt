@@ -23,4 +23,17 @@ class CertificateUtilsTest {
         assertEquals("-----END CERTIFICATE-----",lines.last())
     }
 
+    @Test
+    fun testAddPrivateKeyHeaders(){
+        val pair = CertificateUtils.generateNewCertificatePair("CN=Test")
+        val base64 = CertificateUtils.encodePrivateKeyToBase64(pair.first)
+        val fullPem = CertificateUtils.addPrivateKeyHeaders(base64)
+        assertNotNull(fullPem)
+
+        val lines = fullPem.lines()
+        assertEquals("-----BEGIN PRIVATE KEY-----",lines.first())
+        assertEquals("-----END PRIVATE KEY-----",lines.last())
+        assertEquals(fullPem, CertificateUtils.encodePrivateKeyToPem(pair.first))
+    }
+
 }
