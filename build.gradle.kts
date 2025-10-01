@@ -16,12 +16,12 @@ repositories {
 java {
     withSourcesJar()
     withJavadocJar()
-    sourceCompatibility = JavaVersion.VERSION_21
-    targetCompatibility = JavaVersion.VERSION_21
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
 }
 
 kotlin {
-    jvmToolchain(21)
+    jvmToolchain(17)
 }
 
 dependencies {
@@ -50,11 +50,10 @@ publishing {
     publications {
         create<MavenPublication>("mavenJava") {
             from(components["java"])
-            artifactId = "common-utils"
             pom {
                 name.set("HTTP Client")
                 description.set("Common utils for Java/Kotlin development")
-                url.set("https://github.com/alexanderwolz/common-utils")
+                url.set("https://github.com/alexanderwolz/commons-util")
                 licenses {
                     license {
                         name.set("AGPL-3.0")
@@ -69,9 +68,9 @@ publishing {
                     }
                 }
                 scm {
-                    connection.set("scm:git:https://github.com/alexanderwolz/common-utils.git")
-                    developerConnection.set("scm:git:ssh://git@github.com/alexanderwolz/common-utils.git")
-                    url.set("https://github.com/alexanderwolz/common-utils")
+                    connection.set("scm:git:https://github.com/alexanderwolz/commons-util.git")
+                    developerConnection.set("scm:git:ssh://git@github.com/alexanderwolz/commons-util.git")
+                    url.set("https://github.com/alexanderwolz/commons-util")
                 }
             }
         }
