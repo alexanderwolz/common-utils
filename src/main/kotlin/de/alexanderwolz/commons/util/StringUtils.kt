@@ -34,4 +34,20 @@ object StringUtils {
         }
     }
 
+    fun toHexString(number: Integer): String {
+        return toHexString(number.toInt())
+    }
+
+    fun toHexString(number: Int): String {
+        return Integer.toHexString(number)
+    }
+
+    fun fillLeading(string: String, prefix: String, totalLength: Int = 4): String {
+        var prefixes = ""
+        for (i in string.length until totalLength) {
+            prefixes += prefix
+        }
+        return "${prefixes}$string"
+    }
+
 }
