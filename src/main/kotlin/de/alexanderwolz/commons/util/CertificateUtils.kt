@@ -6,7 +6,6 @@ import org.bouncycastle.cert.X509v1CertificateBuilder
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter
 import org.bouncycastle.crypto.params.RSAKeyParameters
 import org.bouncycastle.crypto.util.SubjectPublicKeyInfoFactory
-import org.bouncycastle.jce.provider.BouncyCastleProvider
 import org.bouncycastle.openssl.PEMKeyPair
 import org.bouncycastle.openssl.PEMParser
 import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter
@@ -19,8 +18,6 @@ import java.math.BigInteger
 import java.security.KeyFactory
 import java.security.KeyPairGenerator
 import java.security.PrivateKey
-import java.security.Security
-import java.security.cert.Certificate
 import java.security.cert.CertificateFactory
 import java.security.cert.X509Certificate
 import java.security.interfaces.RSAPrivateKey
@@ -29,20 +26,6 @@ import java.security.spec.PKCS8EncodedKeySpec
 import java.security.spec.RSAKeyGenParameterSpec
 import java.util.*
 import javax.security.auth.x500.X500Principal
-import kotlin.also
-import kotlin.apply
-import kotlin.collections.forEach
-import kotlin.collections.forEachIndexed
-import kotlin.collections.isEmpty
-import kotlin.collections.map
-import kotlin.io.buffered
-import kotlin.io.readText
-import kotlin.io.use
-import kotlin.jvm.javaClass
-import kotlin.let
-import kotlin.text.decodeToString
-import kotlin.text.replace
-import kotlin.text.startsWith
 
 
 object CertificateUtils {
@@ -61,7 +44,7 @@ object CertificateUtils {
     fun readPrivateKey(file: File): PrivateKey {
         return getPrivateKey(file.readText(Charsets.UTF_8)).also {
             logger.debug {
-                val builder = kotlin.text.StringBuilder("Successfully loaded private key:")
+                val builder = StringBuilder("Successfully loaded private key:")
                 builder.append("\n  File: \t\t${file.name}")
                 builder.append("\n  Format:\t\t${it.format}")
                 builder.append("\n  Algorithm:\t${it.algorithm}")
@@ -73,7 +56,7 @@ object CertificateUtils {
     fun readPrivateKey(pem: String): PrivateKey {
         return getPrivateKey(pem).also {
             logger.debug {
-                val builder = kotlin.text.StringBuilder("Successfully loaded private key:")
+                val builder = StringBuilder("Successfully loaded private key:")
                 builder.append("\n  Format:\t\t${it.format}")
                 builder.append("\n  Algorithm:\t${it.algorithm}")
                 builder.toString()
@@ -117,7 +100,7 @@ object CertificateUtils {
         val cf = CertificateFactory.getInstance("X.509")
         val allCertificates = ArrayList<X509Certificate>()
 
-        val builder = kotlin.text.StringBuilder("Successfully loaded certificate(s):")
+        val builder = StringBuilder("Successfully loaded certificate(s):")
 
         val files = if (fileNames.isEmpty()) {
             listOf(folder) //we assume client wants to use folder as given file
@@ -179,22 +162,11 @@ object CertificateUtils {
 
     fun getPrivateKey(pem: String): PrivateKey {
         if (isEllipticCurve(pem)) {
-
-            //TODO
-            val providers = Security.getProviders("BC")
-            println(providers)
-            println("--")
-            println(Security.getProviders())
-
-            //check BC
-                //we need this provider, as ECDH algorithms are not included in default Java Security Package
-                Security.addProvider(BouncyCastleProvider())
-
             val parsedPem = PEMParser(StringReader(pem)).readObject()
             if (parsedPem is PEMKeyPair) {
                 return JcaPEMKeyConverter().getPrivateKey(parsedPem.privateKeyInfo)
             }
-            throw kotlin.IllegalArgumentException("Unsupported PEM type: $parsedPem")
+            throw IllegalArgumentException("Unsupported PEM type: $parsedPem")
         }
 
         //DEFAULT is RSA based key-pair
@@ -258,7 +230,7 @@ object CertificateUtils {
             RSAKeyParameters(false, publicKey.modulus, publicKey.publicExponent)
         )
 
-        val contentSigner = JcaContentSignerBuilder("SHA1withRSA").setProvider(BouncyCastleProvider()).build(privateKey)
+        val contentSigner = JcaContentSignerBuilder("SHA1withRSA").build(privateKey)
         val holder = X509v1CertificateBuilder(
             subject, serial, notBefore, notAfter, subject, publicKeyInfo
         ).build(contentSigner)
