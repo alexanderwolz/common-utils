@@ -51,8 +51,8 @@ publishing {
         create<MavenPublication>("mavenJava") {
             from(components["java"])
             pom {
-                name.set("HTTP Client")
-                description.set("Common utils for Java/Kotlin development")
+                name.set("Commons Util")
+                description.set("Common utility classes for Java/Kotlin development")
                 url.set("https://github.com/alexanderwolz/commons-util")
                 licenses {
                     license {
