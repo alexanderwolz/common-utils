@@ -140,16 +140,26 @@ object CertificateUtils {
         }
     }
 
-    fun addCertificateHeaders(pem: String): String {
-        return HEADER_CERTIFICATE + "\n" + pem + "\n" + FOOTER_CERTIFICATE
+    fun addCertificateHeaders(base64: String): String {
+        return HEADER_CERTIFICATE + "\n" + base64 + "\n" + FOOTER_CERTIFICATE
     }
 
-    fun addPrivateKeyHeaders(pem: String): String {
-        return HEADER_PRIVATE_KEY + "\n" + pem + "\n" + FOOTER_PRIVATE_KEY
+    fun addPrivateKeyHeaders(base64: String): String {
+        return HEADER_PRIVATE_KEY + "\n" + base64 + "\n" + FOOTER_PRIVATE_KEY
+    }
+
+    fun encodePrivateKeyToPem(privateKey: PrivateKey): String {
+        val base64 = encodePrivateKeyToBase64(privateKey)
+        //TODO add line breaks
+        return addPrivateKeyHeaders(base64)
+    }
+
+    fun encodePrivateKeyToBase64(privateKey: PrivateKey): String {
+        return StringUtils.toBase64(privateKey.encoded)
     }
 
     fun addPrivateKeyHeaders(privateKey: PrivateKey): String {
-        return addPrivateKeyHeaders(Base64.getEncoder().encode(privateKey.encoded).decodeToString())
+        return addPrivateKeyHeaders(encodePrivateKeyToBase64(privateKey))
     }
 
     fun removeHeadersAndFooters(pem: String): String {
@@ -210,7 +220,11 @@ object CertificateUtils {
         throw NoSuchElementException("Could not resolve file: ${file.path}")
     }
 
-    fun generateNewCertificatePair(subjectText: String, serial: BigInteger): Pair<PrivateKey, X509Certificate> {
+    fun generateNewCertificatePair(
+        subjectText: String,
+        serial: BigInteger = BigInteger.ZERO
+    ): Pair<PrivateKey, X509Certificate> {
+
         val keyPair = KeyPairGenerator.getInstance("RSA").apply {
             initialize(RSAKeyGenParameterSpec(2048, BigInteger.valueOf(65537)))
         }.generateKeyPair()
@@ -237,6 +251,17 @@ object CertificateUtils {
         val certificate = JcaX509CertificateConverter().getCertificate(holder)
 
         return Pair(privateKey, certificate)
+    }
+
+    private fun writeNewCertPair(keyFile: File, certFile: File, subject: String, serial: BigInteger = BigInteger.ZERO) {
+        val pair = generateNewCertificatePair(subject, serial)
+        keyFile.apply {
+            writeText(addPrivateKeyHeaders(pair.first))
+        }
+        certFile.apply {
+            val pem = Base64.getEncoder().encode(pair.second.encoded).decodeToString()
+            writeText(addCertificateHeaders(pem))
+        }
     }
 
 }

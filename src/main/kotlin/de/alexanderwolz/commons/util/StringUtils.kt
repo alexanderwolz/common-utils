@@ -1,5 +1,6 @@
 package de.alexanderwolz.commons.util
 
+import java.security.PrivateKey
 import java.util.*
 import java.util.regex.Matcher
 import java.util.regex.Pattern
@@ -40,6 +41,26 @@ object StringUtils {
 
     fun toHexString(number: Int): String {
         return Integer.toHexString(number)
+    }
+
+    fun toBase64(bytes: ByteArray): String {
+        return Base64.getEncoder().encode(bytes).decodeToString()
+    }
+
+    fun toBase64(content: String): String {
+        return toBase64(content.toByteArray())
+    }
+
+    fun fromBase64(bytes: ByteArray): String {
+        return Base64.getDecoder().decode(bytes).decodeToString()
+    }
+
+    fun fromBase64ToBytes(base64: String): ByteArray {
+        return Base64.getDecoder().decode(base64)
+    }
+
+    fun fromBase64(base64: String): String {
+        return fromBase64ToBytes(base64).decodeToString()
     }
 
     fun fillLeading(string: String, prefix: String, totalLength: Int = 4): String {
