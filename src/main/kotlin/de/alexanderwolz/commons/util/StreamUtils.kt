@@ -6,13 +6,13 @@ import java.io.InputStreamReader
 import java.util.stream.Collectors
 import java.util.stream.Stream
 
-class StreamUtilsTest {
+object StreamUtils {
 
     fun convertToString(stream: InputStream): String {
         return convertToJavaStream(stream).collect(Collectors.joining("\n"))
     }
 
-    private fun convertToJavaStream(stream: InputStream): Stream<String> {
+    fun convertToJavaStream(stream: InputStream): Stream<String> {
         return BufferedReader(InputStreamReader(stream)).lines()
     }
 }
