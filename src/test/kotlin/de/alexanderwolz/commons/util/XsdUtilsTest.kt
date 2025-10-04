@@ -29,8 +29,7 @@ class XsdUtilsTest {
     fun testGetVersionFromFilename() {
         val file = File(tmpDir, "myFile_v2_0_0.xsd").also { it.createNewFile() }
         val version = XsdUtils.getVersionFromFile(file)
-        assertEquals("v2_0_0", version)
-
+        assertEquals(listOf(2, 0, 0), version)
     }
 
     @Test
