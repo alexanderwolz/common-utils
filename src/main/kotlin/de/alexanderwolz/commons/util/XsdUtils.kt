@@ -1,17 +1,32 @@
 package de.alexanderwolz.commons.util
 
+import org.bouncycastle.util.Integers
 import java.io.File
 import java.net.URI
+import java.util.ArrayList
 
 object XsdUtils {
 
     fun getTargetNamespace(xsd: String): URI? {
-        val regex = Regex("""targetNamespace\s*=\s*["'](.*?)["']""")
-        return regex.find(xsd)?.groupValues?.get(1)?.let { URI.create(it) }
+        try {
+            val regex = Regex("""targetNamespace\s*=\s*["'](.*?)["']""")
+            return regex.find(xsd)?.groupValues?.get(1)?.let { URI.create(it) }
+        } catch (_: IllegalArgumentException) {
+            return null
+        }
     }
 
-    fun getVersionFromFile(file: File): String {
-        return file.nameWithoutExtension.split("_", limit = 2)[1]
+    fun getVersionFromFile(file: File): List<Int> {
+        //everything after _ is determined a version: file_v1_0.txt -> v1_0
+        val version = ArrayList<Int>() // major.minor.patch.xxx
+        file.nameWithoutExtension.split("_", limit = 2)[1].split("_").forEach {
+            try {
+                version.add(it.replace("v", "").toInt())
+            } catch (e: NumberFormatException) {
+                throw IllegalArgumentException("Could not parse version part: $it", e)
+            }
+        }
+        return version
     }
 
     fun getPackageName(namespace: URI): String {
