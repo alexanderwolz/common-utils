@@ -1,8 +1,5 @@
-package de.alexanderwolz.commons.util
+package de.alexanderwolz.commons.util.xsd
 
-import de.alexanderwolz.commons.util.xsd.XsdUtils
-import org.junit.jupiter.api.io.TempDir
-import java.io.File
 import java.net.URI
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -10,9 +7,6 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
 class XsdUtilsTest {
-
-    @TempDir
-    private lateinit var tmpDir: File
 
     @Test
     fun testGetTargetNamespace() {
@@ -24,14 +18,6 @@ class XsdUtilsTest {
         val namespace = XsdUtils.getTargetNamespace(xsdWithNamespace)
         assertNotNull(namespace)
         assertEquals("http://www.example.com/schema/articles", namespace.toString())
-    }
-
-    @Test
-    fun testGetVersionFromFilename() {
-        val file = File(tmpDir, "myFile_v2_0_0.xsd").also { it.createNewFile() }
-        val version = XsdUtils.getVersionFromFile(file)
-        assertEquals(Version(2, 0, 0), version)
-        assertEquals("2.0.0", version.text)
     }
 
     @Test

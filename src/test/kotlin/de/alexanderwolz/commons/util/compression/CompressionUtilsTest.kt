@@ -1,4 +1,4 @@
-package de.alexanderwolz.commons.util
+package de.alexanderwolz.commons.util.compression
 
 import org.junit.jupiter.api.Test
 import java.util.Base64

@@ -1,6 +1,6 @@
 package de.alexanderwolz.commons.util.xsd
 
-import de.alexanderwolz.commons.util.Version
+import de.alexanderwolz.commons.util.version.Version
 import org.w3c.dom.Element
 import java.io.File
 import java.net.URI
@@ -18,19 +18,7 @@ object XsdUtils {
         }
     }
 
-    fun getVersionFromFile(file: File): Version {
-        val versionSplits = file.nameWithoutExtension.split("_", limit = 2)[1].split("_")
-        val majorString = versionSplits[0]
-        val minorString = versionSplits.getOrNull(1)
-        val patchString = versionSplits.getOrNull(2)
-        val suffixString = versionSplits.getOrNull(3)
 
-        val major = majorString.replaceFirst("v", "").toInt()
-        val minor = minorString?.toInt() ?: 0
-        val patch = patchString?.toInt() ?: 0
-        val suffix = suffixString?.replaceFirst("-", "")
-        return Version(major, minor, patch, suffix)
-    }
 
     fun getPackageName(namespace: URI): String {
         val cleanedUrl = namespace.toString()
@@ -53,7 +41,7 @@ object XsdUtils {
 
         val xsdNamespace = "http://www.w3.org/2001/XMLSchema"
         val references = ArrayList<XsdReference>()
-        
+
         root.getElementsByTagNameNS(xsdNamespace, "include").let { includes ->
             for (i in 0 until includes.length) {
                 val element = includes.item(i) as Element
