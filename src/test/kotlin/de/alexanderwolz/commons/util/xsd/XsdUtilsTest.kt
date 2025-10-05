@@ -1,5 +1,7 @@
 package de.alexanderwolz.commons.util.xsd
 
+import org.junit.jupiter.api.io.TempDir
+import java.io.File
 import java.net.URI
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -7,6 +9,9 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
 class XsdUtilsTest {
+
+    @TempDir
+    private lateinit var tmpDir: File
 
     @Test
     fun testGetTargetNamespace() {
@@ -28,11 +33,37 @@ class XsdUtilsTest {
     }
 
     @Test
-    fun getXsdReferences() {
+    fun getXsdReferencesFromString() {
         XsdUtils.getXsdReferences(xsdWithoutNamespace).apply {
             assertEquals(0, size)
         }
         XsdUtils.getXsdReferences(xsdWithNamespace).also {
+            assertEquals(3, it.size)
+            assertEquals("include", it[0].type)
+            assertEquals("status_v1.xsd", it[0].schemaLocation)
+            assertNull(it[0].namespace)
+            assertEquals("import", it[1].type)
+            assertEquals("author_v2.xsd", it[1].schemaLocation)
+            assertEquals("http://www.example.com/schema/authors", it[1].namespace)
+            assertEquals("import", it[2].type)
+            assertEquals("role_v6.xsd", it[2].schemaLocation)
+            assertEquals("http://www.example.com/schema/roles", it[2].namespace)
+        }
+    }
+
+    @Test
+    fun getXsdReferencesFromFile() {
+        val xsdFileWithoutNamespace = File(tmpDir, "file1.xsd").also {
+            it.writeText(xsdWithoutNamespace)
+        }
+        XsdUtils.getXsdReferences(xsdFileWithoutNamespace).apply {
+            assertEquals(0, size)
+        }
+
+        val xsdFileWithNamespace = File(tmpDir, "file2.xsd").also {
+            it.writeText(xsdWithNamespace)
+        }
+        XsdUtils.getXsdReferences(xsdFileWithNamespace).also {
             assertEquals(3, it.size)
             assertEquals("include", it[0].type)
             assertEquals("status_v1.xsd", it[0].schemaLocation)
