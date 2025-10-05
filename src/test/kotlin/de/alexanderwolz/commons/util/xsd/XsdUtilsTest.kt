@@ -1,5 +1,7 @@
 package de.alexanderwolz.commons.util.xsd
 
+import de.alexanderwolz.commons.util.xsd.XsdReference.Type
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import java.net.URI
@@ -7,22 +9,36 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 class XsdUtilsTest {
 
     @TempDir
     private lateinit var tmpDir: File
 
+    private val parent = File("").absoluteFile
+    private val resourceFolder = File(parent, "src/test/resources/")
+    private val schemasFolder = File(resourceFolder, "schemas")
+
+    private val fileOrderV1 = File(schemasFolder, "order_v1.xsd")
+    private val fileComplexParentV6 = File(schemasFolder, "complexParent_v6.xsd")
+    private val fileArticleV3 = File(schemasFolder, "article_v3.xsd")
+    private val fileBrokenArticleV3 = File(schemasFolder, "brokenArticle_v3.xsd")
+
+    private val contentOrderV1 = fileOrderV1.readText()
+    private val contentArticleV3 = fileArticleV3.readText()
+    private val contentComplexParentV6 = fileComplexParentV6.readText()
+
     @Test
     fun testGetTargetNamespace() {
 
-        XsdUtils.getTargetNamespace(xsdWithoutNamespace).also {
+        XsdUtils.getTargetNamespace(contentOrderV1).also {
             assertNull(it)
         }
 
-        val namespace = XsdUtils.getTargetNamespace(xsdWithNamespace)
+        val namespace = XsdUtils.getTargetNamespace(fileArticleV3.readText())
         assertNotNull(namespace)
-        assertEquals("http://www.example.com/schema/articles", namespace.toString())
+        assertEquals("http://www.alexanderwolz.de/schema/articles", namespace.toString())
     }
 
     @Test
@@ -33,100 +49,71 @@ class XsdUtilsTest {
     }
 
     @Test
-    fun getXsdReferencesFromString() {
-        XsdUtils.getXsdReferences(xsdWithoutNamespace).apply {
+    fun testGetXsdReferencesFromString() {
+        XsdUtils.getXsdReferences(contentOrderV1).apply {
             assertEquals(0, size)
         }
-        XsdUtils.getXsdReferences(xsdWithNamespace).also {
+        XsdUtils.getXsdReferences(contentArticleV3).also {
             assertEquals(3, it.size)
-            assertEquals("include", it[0].type)
+            assertEquals(Type.INCLUDE, it[0].type)
             assertEquals("status_v1.xsd", it[0].schemaLocation)
             assertNull(it[0].namespace)
-            assertEquals("import", it[1].type)
+            assertEquals(Type.IMPORT, it[1].type)
             assertEquals("author_v2.xsd", it[1].schemaLocation)
-            assertEquals("http://www.example.com/schema/authors", it[1].namespace)
-            assertEquals("import", it[2].type)
+            assertEquals("http://www.alexanderwolz.de/schema/authors", it[1].namespace.toString())
+            assertEquals(Type.IMPORT, it[2].type)
             assertEquals("role_v6.xsd", it[2].schemaLocation)
-            assertEquals("http://www.example.com/schema/roles", it[2].namespace)
+            assertEquals("http://www.alexanderwolz.de/schema/roles", it[2].namespace.toString())
         }
     }
 
     @Test
-    fun getXsdReferencesFromFile() {
-        val xsdFileWithoutNamespace = File(tmpDir, "file1.xsd").also {
-            it.writeText(xsdWithoutNamespace)
-        }
-        XsdUtils.getXsdReferences(xsdFileWithoutNamespace).apply {
-            assertEquals(0, size)
-        }
-
-        val xsdFileWithNamespace = File(tmpDir, "file2.xsd").also {
-            it.writeText(xsdWithNamespace)
-        }
-        XsdUtils.getXsdReferences(xsdFileWithNamespace).also {
+    fun testGetXsdReferencesFromFile() {
+        XsdUtils.getXsdReferences(fileArticleV3).also {
             assertEquals(3, it.size)
-            assertEquals("include", it[0].type)
+            assertEquals(Type.INCLUDE, it[0].type)
             assertEquals("status_v1.xsd", it[0].schemaLocation)
             assertNull(it[0].namespace)
-            assertEquals("import", it[1].type)
+            assertEquals(Type.IMPORT, it[1].type)
             assertEquals("author_v2.xsd", it[1].schemaLocation)
-            assertEquals("http://www.example.com/schema/authors", it[1].namespace)
-            assertEquals("import", it[2].type)
+            assertEquals("http://www.alexanderwolz.de/schema/authors", it[1].namespace.toString())
+            assertEquals(Type.IMPORT, it[2].type)
             assertEquals("role_v6.xsd", it[2].schemaLocation)
-            assertEquals("http://www.example.com/schema/roles", it[2].namespace)
+            assertEquals("http://www.alexanderwolz.de/schema/roles", it[2].namespace.toString())
         }
     }
 
+    @Test
+    fun testGetAllReferencedXsdSchemasFromSingleFile() {
+        val resolved = XsdUtils.getAllReferencedXsdSchemaFiles(fileArticleV3).sorted()
+        assertEquals(4, resolved.size)
+        assertEquals("article_v3.xsd", resolved[0].name)
+        assertEquals("author_v2.xsd", resolved[1].name)
+        assertEquals("role_v6.xsd", resolved[2].name)
+        assertEquals("status_v1.xsd", resolved[3].name)
+    }
 
-    private val xsdWithoutNamespace = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n" +
-            "<xs:schema xmlns:xs=\"http://www.w3.org/2001/XMLSchema\">\n" +
-            "\n" +
-            "<xs:element name=\"order\">\n" +
-            "  <xs:complexType>\n" +
-            "    <xs:attribute name=\"orderid\" type=\"xs:string\" use=\"required\"/>\n" +
-            "  </xs:complexType>\n" +
-            "</xs:element>\n" +
-            "\n" +
-            "</xs:schema>"
+    @Test
+    fun testGetAllReferencedXsdSchemasFromMultiFiles() {
+        val resolved = XsdUtils.getAllReferencedXsdSchemaFiles(
+            listOf(fileArticleV3, fileComplexParentV6)
+        ).sorted()
+        assertEquals(6, resolved.size)
+        assertEquals("article_v3.xsd", resolved[0].name)
+        assertEquals("author_v2.xsd", resolved[1].name)
+        assertEquals("complexChild_v6.xsd", resolved[2].name)
+        assertEquals("complexParent_v6.xsd", resolved[3].name)
+        assertEquals("role_v6.xsd", resolved[4].name)
+        assertEquals("status_v1.xsd", resolved[5].name)
+    }
 
-    private val xsdWithNamespace = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-            "<xs:schema attributeFormDefault=\"qualified\"\n" +
-            "           elementFormDefault=\"qualified\"\n" +
-            "           targetNamespace=\"http://www.example.com/schema/articles\"\n" +
-            "           xmlns:authors=\"http://www.example.com/schema/authors\"\n" +
-            "           xmlns:roles=\"http://www.example.com/schema/roles\"\n" +
-            "           xmlns:articles=\"http://www.example.com/schema/articles\"\n" +
-            "           xmlns:xs=\"http://www.w3.org/2001/XMLSchema\">\n" +
-            "    <xs:include schemaLocation=\"status_v1.xsd\"/>\n" +
-            "    <xs:import namespace=\"http://www.example.com/schema/authors\" schemaLocation=\"author_v2.xsd\"/>\n" +
-            "    <xs:import namespace=\"http://www.example.com/schema/roles\" schemaLocation=\"role_v6.xsd\"/>\n" +
-            "    <xs:complexType name=\"article\">\n" +
-            "        <xs:annotation>\n" +
-            "            <xs:documentation>\n" +
-            "                Sample Documentation\n" +
-            "            </xs:documentation>\n" +
-            "        </xs:annotation>\n" +
-            "        <xs:sequence>\n" +
-            "            <xs:element name=\"id\" type=\"xs:string\"/>\n" +
-            "            <xs:element maxOccurs=\"unbounded\" minOccurs=\"0\" ref=\"authors:author\"/>\n" +
-            "            <xs:element name=\"requiredRole\" type=\"roles:role\"/>\n" +
-            "            <xs:element name=\"publicationStatus\" type=\"articles:status\"/>\n" +
-            "        </xs:sequence>\n" +
-            "    </xs:complexType>\n" +
-            "    <xs:complexType name=\"articleList\">\n" +
-            "        <xs:sequence>\n" +
-            "            <xs:element maxOccurs=\"unbounded\" minOccurs=\"0\" name=\"element\" type=\"articles:article\"/>\n" +
-            "        </xs:sequence>\n" +
-            "        <xs:attribute name=\"name\" type=\"xs:string\" use=\"required\"/>\n" +
-            "        <xs:attribute name=\"category\" type=\"articles:category\" use=\"required\"/>\n" +
-            "    </xs:complexType>\n" +
-            "    <xs:simpleType name=\"category\">\n" +
-            "        <xs:restriction base=\"xs:string\">\n" +
-            "            <xs:enumeration value=\"COMMON\"/>\n" +
-            "            <xs:enumeration value=\"DEVELOPMENT\"/>\n" +
-            "            <xs:enumeration value=\"OPERATIONS\"/>\n" +
-            "        </xs:restriction>\n" +
-            "    </xs:simpleType>\n" +
-            "</xs:schema>\n"
+    @Test
+    fun testGetAllReferencedXsdSchemasFromBrokenFile() {
+        assertThrows<NoSuchElementException> {
+            XsdUtils.getAllReferencedXsdSchemaFiles(fileBrokenArticleV3)
+        }.also {
+            assertTrue { it.message?.contains("File for location 'xxauthor_v2.xsd' does not exist") ?: false }
+        }
+    }
 
 }

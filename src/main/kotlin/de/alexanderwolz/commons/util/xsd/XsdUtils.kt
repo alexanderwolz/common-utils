@@ -1,11 +1,15 @@
 package de.alexanderwolz.commons.util.xsd
 
+import de.alexanderwolz.commons.log.Logger
+import de.alexanderwolz.commons.util.xsd.XsdReference.Type
 import org.w3c.dom.Element
 import java.io.File
 import java.net.URI
 import javax.xml.parsers.DocumentBuilderFactory
 
 object XsdUtils {
+
+    private val logger = Logger(javaClass)
 
     fun getTargetNamespace(xsd: String): URI? {
         try {
@@ -17,11 +21,8 @@ object XsdUtils {
     }
 
     fun getPackageName(namespace: URI): String {
-        val cleanedUrl = namespace.toString()
-            .removePrefix("http://")
-            .removePrefix("https://")
-            .removePrefix("www.")
-            .trimEnd('/')
+        val cleanedUrl =
+            namespace.toString().removePrefix("http://").removePrefix("https://").removePrefix("www.").trimEnd('/')
         val splits = cleanedUrl.split("/", limit = 2)
         val domainParts = splits[0].split(".").reversed()
         val pathParts = splits.getOrNull(1)?.split("/") ?: emptyList()
@@ -29,6 +30,7 @@ object XsdUtils {
     }
 
     fun getXsdReferences(schemaFile: File): List<XsdReference> {
+        logger.trace { "Resolving XSD references for ${schemaFile.name} .." }
         val root = DocumentBuilderFactory.newInstance().apply {
             isNamespaceAware = true
         }.newDocumentBuilder().parse(schemaFile).documentElement
@@ -51,7 +53,7 @@ object XsdUtils {
             for (i in 0 until includes.length) {
                 val element = includes.item(i) as Element
                 element.getAttribute("schemaLocation").takeIf { it.isNotEmpty() }?.let {
-                    references.add(XsdReference("include", it, null))
+                    references.add(XsdReference(Type.INCLUDE, it, null))
                 }
             }
         }
@@ -60,9 +62,9 @@ object XsdUtils {
             for (i in 0 until imports.length) {
                 val element = imports.item(i) as Element
                 val schemaLocation = element.getAttribute("schemaLocation")
-                val namespace = element.getAttribute("namespace")
+                val namespace = URI.create(element.getAttribute("namespace"))
                 if (schemaLocation.isNotEmpty()) {
-                    references.add(XsdReference("import", schemaLocation, namespace))
+                    references.add(XsdReference(Type.IMPORT, schemaLocation, namespace))
                 }
             }
         }
@@ -71,11 +73,49 @@ object XsdUtils {
             for (i in 0 until redefines.length) {
                 val element = redefines.item(i) as Element
                 element.getAttribute("schemaLocation").takeIf { it.isNotEmpty() }?.let {
-                    references.add(XsdReference("redefine", it, null))
+                    references.add(XsdReference(Type.REDEFINE, it, null))
                 }
             }
         }
 
         return references
+    }
+
+
+    fun getAllReferencedXsdSchemaFiles(schema: File, schemaFolder: File? = null): Set<File> {
+        return getAllReferencedXsdSchemaFiles(listOf(schema))
+    }
+
+    fun getAllReferencedXsdSchemaFiles(schemas: Collection<File>, schemaFolder: File? = null): Set<File> {
+        if (schemas.isEmpty()) return emptySet()
+
+        val resolved = mutableSetOf<File>()
+        val visited = mutableSetOf<XsdReference>()
+
+        fun resolveRecursive(reference: XsdReference, schemaFolder: File) {
+            if (reference in visited) return
+            visited.add(reference)
+
+            val schemaFile = File(schemaFolder, reference.schemaLocation)
+            if (!schemaFile.exists()) {
+                throw NoSuchElementException("File for location '${reference.schemaLocation}' does not exist: $schemaFile")
+            }
+            resolved.add(schemaFile)
+
+            getXsdReferences(schemaFile).forEach { reference ->
+                resolveRecursive(reference, schemaFolder)
+            }
+        }
+
+        val schemaFolder = schemaFolder ?: schemas.first().parentFile
+        logger.trace { "Using schema folder: $schemaFolder" }
+
+        schemas.forEach {
+            val namespace = getTargetNamespace(it.readText())
+            val reference = XsdReference(Type.ROOT, it.name, namespace)
+            resolveRecursive(reference, schemaFolder)//start recursion
+        }
+
+        return resolved
     }
 }
