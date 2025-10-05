@@ -82,28 +82,34 @@ object XsdUtils {
     }
 
 
-    fun getAllReferencedXsdSchemaFiles(schema: File, schemaFolder: File? = null): Set<File> {
+    fun getAllReferencedXsdSchemaFiles(schema: File, schemaFolder: File? = null): Set<XsdFileReference> {
         return getAllReferencedXsdSchemaFiles(listOf(schema))
     }
 
-    fun getAllReferencedXsdSchemaFiles(schemas: Collection<File>, schemaFolder: File? = null): Set<File> {
+    fun getAllReferencedXsdSchemaFiles(schemas: Collection<File>, schemaFolder: File? = null): Set<XsdFileReference> {
         if (schemas.isEmpty()) return emptySet()
 
-        val resolved = mutableSetOf<File>()
-        val visited = mutableSetOf<XsdReference>()
+        val resolved = mutableSetOf<XsdFileReference>()
+        val visited = mutableSetOf<File>()
 
-        fun resolveRecursive(reference: XsdReference, schemaFolder: File) {
-            if (reference in visited) return
-            visited.add(reference)
+        fun resolveRecursive(schemaFolder: File, reference: XsdFileReference) {
+            if (visited.contains(reference.file)) return
+            visited.add(reference.file)
 
             val schemaFile = File(schemaFolder, reference.schemaLocation)
             if (!schemaFile.exists()) {
                 throw NoSuchElementException("File for location '${reference.schemaLocation}' does not exist: $schemaFile")
             }
-            resolved.add(schemaFile)
 
-            getXsdReferences(schemaFile).forEach { reference ->
-                resolveRecursive(reference, schemaFolder)
+            val children = getXsdReferences(schemaFile).map {
+                val schemaFile = File(schemaFolder, it.schemaLocation)
+                XsdFileReference(it.type, it.schemaLocation, it.namespace, schemaFile, reference)
+            }.toSet()
+            reference.addChildren(children)
+            resolved.add(reference)
+
+            children.forEach { child ->
+                resolveRecursive(schemaFolder, child)
             }
         }
 
@@ -112,8 +118,9 @@ object XsdUtils {
 
         schemas.forEach {
             val namespace = getTargetNamespace(it.readText())
-            val reference = XsdReference(Type.ROOT, it.name, namespace)
-            resolveRecursive(reference, schemaFolder)//start recursion
+            val schemaLocation = it.name
+            val reference = XsdFileReference(Type.ROOT, schemaLocation, namespace, it, null)
+            resolveRecursive(schemaFolder, reference) //start recursion
         }
 
         return resolved
