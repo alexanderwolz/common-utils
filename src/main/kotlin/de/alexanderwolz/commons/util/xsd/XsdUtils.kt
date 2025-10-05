@@ -1,10 +1,8 @@
 package de.alexanderwolz.commons.util.xsd
 
-import de.alexanderwolz.commons.util.version.Version
 import org.w3c.dom.Element
 import java.io.File
 import java.net.URI
-import java.util.ArrayList
 import javax.xml.parsers.DocumentBuilderFactory
 
 object XsdUtils {
@@ -17,7 +15,6 @@ object XsdUtils {
             return null
         }
     }
-
 
     fun getPackageName(namespace: URI): String {
         val cleanedUrl = namespace.toString()

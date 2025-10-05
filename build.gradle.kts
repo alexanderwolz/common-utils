@@ -10,7 +10,7 @@ plugins {
 }
 
 group = "de.alexanderwolz"
-version = "1.4.0"
+version = "1.4.2"
 
 repositories {
     mavenCentral()
@@ -28,7 +28,7 @@ kotlin {
 }
 
 dependencies {
-    implementation("de.alexanderwolz:commons-log:1.0.0")
+    implementation("de.alexanderwolz:commons-log:1.3.0")
     compileOnly("org.bouncycastle:bcpkix-jdk18on:1.81")
 
     testImplementation(kotlin("test"))
