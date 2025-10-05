@@ -84,27 +84,27 @@ class XsdUtilsTest {
     }
 
     @Test
-    fun testGetAllReferencedXsdSchemasFromSingleFile() {
-        val resolved = XsdUtils.getAllReferencedXsdSchemaFiles(fileArticleV3).sorted()
+    fun testGetAllReferencedSchemaFilesFromSingleFile() {
+        val resolved = XsdUtils.getAllReferencedXsdSchemaFiles(fileArticleV3).sortedBy { it.file }
         assertEquals(4, resolved.size)
-        assertEquals("article_v3.xsd", resolved[0].name)
-        assertEquals("author_v2.xsd", resolved[1].name)
-        assertEquals("role_v6.xsd", resolved[2].name)
-        assertEquals("status_v1.xsd", resolved[3].name)
+        assertEquals("article_v3.xsd", resolved[0].schemaLocation)
+        assertEquals("author_v2.xsd", resolved[1].schemaLocation)
+        assertEquals("role_v6.xsd", resolved[2].schemaLocation)
+        assertEquals("status_v1.xsd", resolved[3].schemaLocation)
     }
 
     @Test
     fun testGetAllReferencedXsdSchemasFromMultiFiles() {
         val resolved = XsdUtils.getAllReferencedXsdSchemaFiles(
             listOf(fileArticleV3, fileComplexParentV6)
-        ).sorted()
+        ).sortedBy { it.file }
         assertEquals(6, resolved.size)
-        assertEquals("article_v3.xsd", resolved[0].name)
-        assertEquals("author_v2.xsd", resolved[1].name)
-        assertEquals("complexChild_v6.xsd", resolved[2].name)
-        assertEquals("complexParent_v6.xsd", resolved[3].name)
-        assertEquals("role_v6.xsd", resolved[4].name)
-        assertEquals("status_v1.xsd", resolved[5].name)
+        assertEquals("article_v3.xsd", resolved[0].schemaLocation)
+        assertEquals("author_v2.xsd", resolved[1].schemaLocation)
+        assertEquals("complexChild_v6.xsd", resolved[2].schemaLocation)
+        assertEquals("complexParent_v6.xsd", resolved[3].schemaLocation)
+        assertEquals("role_v6.xsd", resolved[4].schemaLocation)
+        assertEquals("status_v1.xsd", resolved[5].schemaLocation)
     }
 
     @Test
