@@ -1,5 +1,6 @@
-package de.alexanderwolz.commons.util
+package de.alexanderwolz.commons.util.file
 
+import de.alexanderwolz.commons.util.string.StringUtils
 import java.io.File
 import java.io.FileOutputStream
 

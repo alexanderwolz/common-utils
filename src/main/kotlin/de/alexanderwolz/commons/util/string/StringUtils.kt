@@ -1,7 +1,7 @@
-package de.alexanderwolz.commons.util
+package de.alexanderwolz.commons.util.string
 
-import java.security.PrivateKey
-import java.util.*
+import java.util.Base64
+import java.util.Locale
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 

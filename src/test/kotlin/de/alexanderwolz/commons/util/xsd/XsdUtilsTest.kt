@@ -1,4 +1,4 @@
-package de.alexanderwolz.commons.util
+package de.alexanderwolz.commons.util.xsd
 
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
@@ -26,17 +26,55 @@ class XsdUtilsTest {
     }
 
     @Test
-    fun testGetVersionFromFilename() {
-        val file = File(tmpDir, "myFile_v2_0_0.xsd").also { it.createNewFile() }
-        val version = XsdUtils.getVersionFromFile(file)
-        assertEquals(listOf(2, 0, 0), version)
-    }
-
-    @Test
     fun testGetPackageName() {
         val namespace = URI.create("https://www.example.com/something/funny")
         val packageName = XsdUtils.getPackageName(namespace)
         assertEquals("com.example.something.funny", packageName)
+    }
+
+    @Test
+    fun getXsdReferencesFromString() {
+        XsdUtils.getXsdReferences(xsdWithoutNamespace).apply {
+            assertEquals(0, size)
+        }
+        XsdUtils.getXsdReferences(xsdWithNamespace).also {
+            assertEquals(3, it.size)
+            assertEquals("include", it[0].type)
+            assertEquals("status_v1.xsd", it[0].schemaLocation)
+            assertNull(it[0].namespace)
+            assertEquals("import", it[1].type)
+            assertEquals("author_v2.xsd", it[1].schemaLocation)
+            assertEquals("http://www.example.com/schema/authors", it[1].namespace)
+            assertEquals("import", it[2].type)
+            assertEquals("role_v6.xsd", it[2].schemaLocation)
+            assertEquals("http://www.example.com/schema/roles", it[2].namespace)
+        }
+    }
+
+    @Test
+    fun getXsdReferencesFromFile() {
+        val xsdFileWithoutNamespace = File(tmpDir, "file1.xsd").also {
+            it.writeText(xsdWithoutNamespace)
+        }
+        XsdUtils.getXsdReferences(xsdFileWithoutNamespace).apply {
+            assertEquals(0, size)
+        }
+
+        val xsdFileWithNamespace = File(tmpDir, "file2.xsd").also {
+            it.writeText(xsdWithNamespace)
+        }
+        XsdUtils.getXsdReferences(xsdFileWithNamespace).also {
+            assertEquals(3, it.size)
+            assertEquals("include", it[0].type)
+            assertEquals("status_v1.xsd", it[0].schemaLocation)
+            assertNull(it[0].namespace)
+            assertEquals("import", it[1].type)
+            assertEquals("author_v2.xsd", it[1].schemaLocation)
+            assertEquals("http://www.example.com/schema/authors", it[1].namespace)
+            assertEquals("import", it[2].type)
+            assertEquals("role_v6.xsd", it[2].schemaLocation)
+            assertEquals("http://www.example.com/schema/roles", it[2].namespace)
+        }
     }
 
 

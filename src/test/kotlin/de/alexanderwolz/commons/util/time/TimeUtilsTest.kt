@@ -1,4 +1,4 @@
-package de.alexanderwolz.commons.util
+package de.alexanderwolz.commons.util.time
 
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals

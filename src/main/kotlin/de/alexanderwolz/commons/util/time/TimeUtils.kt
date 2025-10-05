@@ -1,4 +1,4 @@
-package de.alexanderwolz.commons.util
+package de.alexanderwolz.commons.util.time
 
 object TimeUtils {
 

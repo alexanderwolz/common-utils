@@ -1,4 +1,4 @@
-package de.alexanderwolz.commons.util
+package de.alexanderwolz.commons.util.certificate
 
 import org.junit.jupiter.api.Test
 import java.math.BigInteger
@@ -19,8 +19,8 @@ class CertificateUtilsTest {
         val fullPem = CertificateUtils.addCertificateHeaders("MDX5562")
         assertNotNull(fullPem)
         val lines = fullPem.lines()
-        assertEquals("-----BEGIN CERTIFICATE-----",lines.first())
-        assertEquals("-----END CERTIFICATE-----",lines.last())
+        assertEquals("-----BEGIN CERTIFICATE-----", lines.first())
+        assertEquals("-----END CERTIFICATE-----", lines.last())
     }
 
     @Test
@@ -31,8 +31,8 @@ class CertificateUtilsTest {
         assertNotNull(fullPem)
 
         val lines = fullPem.lines()
-        assertEquals("-----BEGIN PRIVATE KEY-----",lines.first())
-        assertEquals("-----END PRIVATE KEY-----",lines.last())
+        assertEquals("-----BEGIN PRIVATE KEY-----", lines.first())
+        assertEquals("-----END PRIVATE KEY-----", lines.last())
         assertEquals(fullPem, CertificateUtils.encodePrivateKeyToPem(pair.first))
     }
 

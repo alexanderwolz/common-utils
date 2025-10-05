@@ -1,5 +1,6 @@
-package de.alexanderwolz.commons.util
+package de.alexanderwolz.commons.util.compression
 
+import de.alexanderwolz.commons.util.string.StringUtils
 import java.io.ByteArrayOutputStream
 import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream

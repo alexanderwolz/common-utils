@@ -1,4 +1,4 @@
-package de.alexanderwolz.commons.util
+package de.alexanderwolz.commons.util.string
 
 import kotlin.test.Test
 import kotlin.test.assertEquals

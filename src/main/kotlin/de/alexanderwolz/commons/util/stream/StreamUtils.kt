@@ -1,4 +1,4 @@
-package de.alexanderwolz.commons.util
+package de.alexanderwolz.commons.util.stream
 
 import java.io.BufferedReader
 import java.io.InputStream
