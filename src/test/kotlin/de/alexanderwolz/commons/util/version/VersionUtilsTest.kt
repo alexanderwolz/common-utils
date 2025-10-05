@@ -12,9 +12,9 @@ class VersionUtilsTest {
 
     @Test
     fun testGetVersionFromFilename() {
-        val file = File(tmpDir, "myFile_v2_0_0.xsd").also { it.createNewFile() }
+        val file = File(tmpDir, "myFile_v2_0.xsd").also { it.createNewFile() }
         val version = VersionUtils.getVersion(file)
-        assertEquals(Version(2, 0, 0), version)
-        assertEquals("2.0.0", version.text)
+        assertEquals(Version(2, 0), version)
+        assertEquals("2.0", version.asString())
     }
 }
