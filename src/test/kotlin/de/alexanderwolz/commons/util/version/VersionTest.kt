@@ -8,10 +8,10 @@ class VersionTest {
     @Test
     fun testVersions() {
         Version(1, 2, 4).apply {
-            assertEquals("1.2.4", this.text)
+            assertEquals("1.2.4", this.asString())
         }
         Version(1, 2, 4, "SNAPSHOT").apply {
-            assertEquals("1.2.4-SNAPSHOT", this.text)
+            assertEquals("1.2.4-SNAPSHOT", this.asString())
         }
         Version.fromString("1.2.4-SNAPSHOT").apply {
             assertEquals(1, this.major)

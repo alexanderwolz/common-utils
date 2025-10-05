@@ -1,14 +1,31 @@
 package de.alexanderwolz.commons.util.version
 
-data class Version(val major: Int, val minor: Int, val patch: Int, val suffix: String? = null) {
-    val text = "$major.$minor.$patch${suffix?.let { "-$it" } ?: ""}"
+data class Version(val major: Int, val minor: Int? = null, val patch: Int? = null, val suffix: String? = null) {
+
+    fun asString(separator: String = ".", prefix: String? = null): String {
+        val builder = StringBuilder()
+        prefix?.let {
+            builder.append(it)
+        }
+        builder.append("$major")
+        minor?.let {
+            builder.append("$separator$it")
+        }
+        patch?.let {
+            builder.append("$separator$it")
+        }
+        suffix?.let {
+            builder.append("-$it")
+        }
+        return builder.toString()
+    }
 
     companion object {
         fun fromString(version: String): Version {
             val splits = version.split(".")
-            var major = 0
-            var minor = 0
-            var patch = 0
+            var major: Int? = null
+            var minor: Int? = null
+            var patch: Int? = null
             var suffix: String? = null
 
             if (splits.size == 1) {
@@ -18,7 +35,7 @@ data class Version(val major: Int, val minor: Int, val patch: Int, val suffix: S
                 major = splits[0].replaceFirst("v", "").toInt()
                 val patchSplits = splits.getOrNull(1)?.split("-")
                 patchSplits?.let {
-                    patch = patchSplits.getOrNull(0)?.toInt() ?: 0
+                    minor = patchSplits.getOrNull(0)?.toInt() ?: 0
                     suffix = patchSplits.getOrNull(1)
                 }
             }
@@ -32,7 +49,7 @@ data class Version(val major: Int, val minor: Int, val patch: Int, val suffix: S
                 }
             }
 
-            return Version(major, minor, patch, suffix)
+            return Version(major ?: 0, minor, patch, suffix)
         }
     }
 
