@@ -1,6 +1,7 @@
 package de.alexanderwolz.commons.util.xsd
 
 import de.alexanderwolz.commons.util.xsd.XsdReference.Type
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import java.net.URI
@@ -8,6 +9,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 class XsdUtilsTest {
 
@@ -21,8 +23,10 @@ class XsdUtilsTest {
     private val fileOrderV1 = File(schemasFolder, "order_v1.xsd")
     private val fileComplexParentV6 = File(schemasFolder, "complexParent_v6.xsd")
     private val fileArticleV3 = File(schemasFolder, "article_v3.xsd")
+    private val fileBrokenArticleV3 = File(schemasFolder, "brokenArticle_v3.xsd")
 
     private val contentOrderV1 = fileOrderV1.readText()
+    private val contentArticleV3 = fileArticleV3.readText()
     private val contentComplexParentV6 = fileComplexParentV6.readText()
 
     @Test
@@ -49,7 +53,7 @@ class XsdUtilsTest {
         XsdUtils.getXsdReferences(contentOrderV1).apply {
             assertEquals(0, size)
         }
-        XsdUtils.getXsdReferences(fileArticleV3).also {
+        XsdUtils.getXsdReferences(contentArticleV3).also {
             assertEquals(3, it.size)
             assertEquals(Type.INCLUDE, it[0].type)
             assertEquals("status_v1.xsd", it[0].schemaLocation)
@@ -80,13 +84,36 @@ class XsdUtilsTest {
     }
 
     @Test
-    fun testGetAllReferencedXsdSchemaFiles() {
+    fun testGetAllReferencedXsdSchemasFromSingleFile() {
         val resolved = XsdUtils.getAllReferencedXsdSchemaFiles(fileArticleV3).sorted()
         assertEquals(4, resolved.size)
         assertEquals("article_v3.xsd", resolved[0].name)
         assertEquals("author_v2.xsd", resolved[1].name)
         assertEquals("role_v6.xsd", resolved[2].name)
         assertEquals("status_v1.xsd", resolved[3].name)
+    }
+
+    @Test
+    fun testGetAllReferencedXsdSchemasFromMultiFiles() {
+        val resolved = XsdUtils.getAllReferencedXsdSchemaFiles(
+            listOf(fileArticleV3, fileComplexParentV6)
+        ).sorted()
+        assertEquals(6, resolved.size)
+        assertEquals("article_v3.xsd", resolved[0].name)
+        assertEquals("author_v2.xsd", resolved[1].name)
+        assertEquals("complexChild_v6.xsd", resolved[2].name)
+        assertEquals("complexParent_v6.xsd", resolved[3].name)
+        assertEquals("role_v6.xsd", resolved[4].name)
+        assertEquals("status_v1.xsd", resolved[5].name)
+    }
+
+    @Test
+    fun testGetAllReferencedXsdSchemasFromBrokenFile() {
+        assertThrows<NoSuchElementException> {
+            XsdUtils.getAllReferencedXsdSchemaFiles(fileBrokenArticleV3)
+        }.also {
+            assertTrue { it.message?.contains("File for location 'xxauthor_v2.xsd' does not exist") ?: false }
+        }
     }
 
 }
