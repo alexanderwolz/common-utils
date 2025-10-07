@@ -10,7 +10,7 @@ plugins {
 }
 
 group = "de.alexanderwolz"
-version = "1.4.6"
+version = "1.4.7"
 
 repositories {
     mavenCentral()
@@ -28,7 +28,7 @@ kotlin {
 }
 
 dependencies {
-    api("de.alexanderwolz:commons-log:1.3.0")
+    api("de.alexanderwolz:commons-log:1.3.1")
     compileOnly("org.bouncycastle:bcpkix-jdk18on:1.81")
 
     testImplementation(kotlin("test"))
@@ -38,6 +38,19 @@ dependencies {
 
 tasks.test {
     useJUnitPlatform()
+    finalizedBy(tasks.jacocoTestReport)
+}
+
+jacoco {
+    toolVersion = "0.8.11"
+}
+
+tasks.jacocoTestReport {
+    dependsOn(tasks.test)
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+    }
 }
 
 tasks.jar {
@@ -53,22 +66,6 @@ tasks.jar {
     }
 }
 
-jacoco {
-    toolVersion = "0.8.11"
-}
-
-tasks.test {
-    finalizedBy(tasks.jacocoTestReport)
-}
-
-tasks.jacocoTestReport {
-    dependsOn(tasks.test)
-    reports {
-        xml.required.set(true)
-        html.required.set(true)
-    }
-}
-
 //see also https://github.com/gradle-nexus/publish-plugin/tree/v2.0.0
 publishing {
     publications {
@@ -80,8 +77,8 @@ publishing {
                 url.set("https://github.com/alexanderwolz/commons-util")
                 licenses {
                     license {
-                        name.set("AGPL-3.0")
-                        url.set("https://www.gnu.org/licenses/agpl-3.0.html")
+                        name.set("Apache License 2.0")
+                        url.set("https://www.apache.org/licenses/LICENSE-2.0")
                     }
                 }
                 developers {
