@@ -17,4 +17,24 @@ class VersionUtilsTest {
         assertEquals(Version(2, 0), version)
         assertEquals("2.0", version.asString())
     }
+
+    @Test
+    fun testGetVersionFromString() {
+        VersionUtils.getVersion("v3.0.4-SNAPSHOT").apply {
+            assertEquals(Version(3, 0, 4, "SNAPSHOT"), this)
+            assertEquals("3.0.4.SNAPSHOT", asString())
+        }
+        VersionUtils.getVersion("v2.6_SNAPSHOT").apply {
+            assertEquals(Version(2, 6, null, "SNAPSHOT"), this)
+            assertEquals("v2_6_SNAPSHOT", asString("_","v"))
+        }
+        VersionUtils.getVersion("2.6_SNAPSHOT").apply {
+            assertEquals(Version(2, 6, null, "SNAPSHOT"), this)
+            assertEquals("v2_6_SNAPSHOT", asString("_","v"))
+        }
+        VersionUtils.getVersion("8-SNAPSHOT").apply {
+            assertEquals(Version(8, null, null, "SNAPSHOT"), this)
+            assertEquals("v8_SNAPSHOT", asString("_","v"))
+        }
+    }
 }

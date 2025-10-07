@@ -11,7 +11,7 @@ class VersionTest {
             assertEquals("1.2.4", this.asString())
         }
         Version(1, 2, 4, "SNAPSHOT").apply {
-            assertEquals("1.2.4-SNAPSHOT", this.asString())
+            assertEquals("1.2.4.SNAPSHOT", this.asString())
         }
         Version.fromString("1.2.4-SNAPSHOT").apply {
             assertEquals(1, this.major)
