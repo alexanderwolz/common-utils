@@ -15,7 +15,7 @@ data class Version(val major: Int, val minor: Int? = null, val patch: Int? = nul
             builder.append("$separator$it")
         }
         suffix?.let {
-            builder.append("-$it")
+            builder.append("$separator$it")
         }
         return builder.toString()
     }
@@ -29,12 +29,15 @@ data class Version(val major: Int, val minor: Int? = null, val patch: Int? = nul
             var suffix: String? = null
 
             if (splits.size == 1) {
-                major = splits[0].replaceFirst("v", "").toInt()
+                val splits = splits[0].replaceFirst("v", "")
+                val patchSplits = splits.split(".", "-", "_")
+                major = patchSplits.getOrNull(0)?.toInt() ?: 0
+                suffix = patchSplits.getOrNull(1)
             }
             if (splits.size == 2) {
                 major = splits[0].replaceFirst("v", "").toInt()
-                val patchSplits = splits.getOrNull(1)?.split("-")
-                patchSplits?.let {
+                splits.getOrNull(1)?.let {
+                    val patchSplits = it.split(".", "-", "_")
                     minor = patchSplits.getOrNull(0)?.toInt() ?: 0
                     suffix = patchSplits.getOrNull(1)
                 }
@@ -42,8 +45,8 @@ data class Version(val major: Int, val minor: Int? = null, val patch: Int? = nul
             if (splits.size == 3) {
                 major = splits[0].replaceFirst("v", "").toInt()
                 minor = splits[1].toInt()
-                val patchSplits = splits.getOrNull(2)?.split("-")
-                patchSplits?.let {
+                splits.getOrNull(2)?.let {
+                    val patchSplits = it.split(".", "-", "_")
                     patch = patchSplits.getOrNull(0)?.toInt() ?: 0
                     suffix = patchSplits.getOrNull(1)
                 }

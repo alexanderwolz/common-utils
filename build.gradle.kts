@@ -14,6 +14,8 @@ version = "1.4.7"
 
 repositories {
     mavenCentral()
+    mavenLocal()
+    maven("https://repo1.maven.org/maven2")
 }
 
 java {
